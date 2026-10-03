@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIFI Electron IPC</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: Arial, sans-serif;
+            background: #202124;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #61dafb;
+        }
+
+        .card {
+            padding: 25px;
+            margin-top: 20px;
+            background: #303134;
+            border-radius: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 0;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin-right: 8px;
+            border: 0;
+            border-radius: 6px;
+            background: #61dafb;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #3fc5e8;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            min-height: 60px;
+            white-space: pre-line;
+            background: #1b1b1b;
+            border-radius: 6px;
+            color: #9cdcfe;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>WIFI Electron IPC</h1>
+        <p>App zur Kommunikation zwischen renderer.js preload.js und main.js</p>
+
+        <div class="card">
+            <h2>1. Renderer -> Preload</h2>
+            <input type="text" id="name" placeholder="Dein Name">
+            <button id="helloButton">Hallo sagen</button>
+            <h2>2. Renderer -> Main</h2>
+            <button id="infoButton">App Info</button>
+
+            <div id="output">Ergebnis hier...</div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>
