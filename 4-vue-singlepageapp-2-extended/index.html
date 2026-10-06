@@ -22,19 +22,30 @@
                 </div>
 
                 <div class="product-info">
-                    <h1>{{ product }}</h1>
+                    <h1>{{ title }}</h1>
                     <p>{{ description }}</p>
                     <ul>
                         <li v-for="detail in details">{{ detail }}</li>
                     </ul>
                     <a :href="url">WIFI Website</a>
-                    <p v-if="inventory > 10">auf Lager</p>
-                    <p v-else-if="inventory <= 10 && inventory > 0">nur wenige Artikel lagernd</p>
+                    <p v-if="inStock > 10">auf Lager</p>
+                    <p v-else-if="inStock <= 10 && inStock > 0">nur wenige Artikel lagernd</p>
                     <p v-else>ausverkauft</p>
-                    <p v-show="onSale">Angebot!</p>
-                    <div v-for="variant in variants" :key="variant.id" @mouseover="updateImage(variant.image)">{{
-                        variant.color }}</div>
-                    <button class="button" @click="addToCart">einkaufen</button>
+                    <p v-show="onSale">{{ sale }}</p>
+                    <div 
+                        v-for="(variant, index) in variants" 
+                        :key="variant.id" 
+                        @mouseover="updateVariant(index)"
+                        class="color-circle"
+                        :style="{ backgroundColor: variant.color }">
+                    </div>
+                    <button 
+                        class="button"
+                        :class="{ disabledButton: !inStock }"
+                        :disabled="!inStock"
+                        @click="addToCart">
+                        einkaufen
+                    </button>
                     <button class="button" v-on:click="removeFromCart">Artikel entfernen</button>
                 </div>
             </div>
