@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lern-App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <main class="app">
+        <header>
+            <h1>WIFI Lern-App</h1>
+            <p>meine Lernaufgaben:</p>
+        </header>
+
+        <form id="task-form">
+            <input id="task-input" type="text" placeholder="Neue Aufgabe..." required>
+            <button type="submit">+</button>
+        </form>
+        <ul id="task-list"></ul>
+    </main>
+    
+    <script src="app.js"></script>
+</body>
+</html>
