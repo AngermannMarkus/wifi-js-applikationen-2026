@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch Motion Lab</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, sans-serif;
+            background: #101827;
+            color: #edf4ff;
+        }
+
+        main {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        section {
+            background: #1b293c;
+            padding: 18px;
+            margin: 16px 0;
+            border-radius: 14px;
+        }
+
+        h1,
+        h2 {
+            margin-top: 0;
+        }
+
+        p {
+            color: #c4d1e4;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 8px;
+            background: #54e1c1;
+            color: #10202b;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #playground {
+            position: relative;
+            height: 260px;
+            overflow: hidden;
+            border: 2px dashed #7891ae;
+            border-radius: 12px;
+            background:
+                linear-gradient(#263850 1px, transparent 1px),
+                linear-gradient(90deg, #263850 1px, transparent 1px);
+            background-size: 25px 25px;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #ball {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #54e1c1;
+            box-shadow: 0 0 20px #54e1c188;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .values {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .value {
+            padding: 12px;
+            background: #101827;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .number {
+            display: block;
+            font-size: 1.4rem;
+            color: #54e1c1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #log {
+            min-height: 48px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .values {
+                gap: 5px;
+            }
+
+            .value {
+                padding: 8px;
+            }
+
+            .number {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Touch Motion Lab</h1>
+        <p>Simulation von Touch und Bewegungs-Events</p>
+
+        <section>
+            <h2>1. Touch</h2>
+            <p>Bewege einen oder mehrere Finger über die Fläche.</p>
+            <div id="playground">
+                <div id="ball"></div>
+            </div>
+
+            <p>Aktive Touches: <strong id="touchCount">0</strong></p>
+            <p id="log">Warte auf Touch Ereignisse</p>
+        </section>
+
+        <section>
+            <h2>2. Device Orientation</h2>
+            <p>Sensorzugriff muss erlaubt werden. Alpha beschreibt die Drehung um Z,
+                Beta um X und Gamma um Y.
+            </p>
+
+            <div class="values">
+                <div class="value">alpha <span class="number" id="alpha">-</span></div>
+                <div class="value">beta <span class="number" id="beta">-</span></div>
+                <div class="value">gamma <span class="number" id="gamma">-</span></div>
+            </div>
+
+            <p id="sensorStatus">Sensoren noch nicht gestartet.</p>
+            <button id="startSensors">Sensoren aktivieren</button>
+        </section>
+
+        <section>
+            <h2>3. Device Motion</h2>
+            <p>Bewegung und Beschleunigung in m/s².</p>
+
+            <div class="values">
+                <div class="value">acceleration.x <span class="number" id="ax">-</span>m/s²</div>
+                <div class="value">acceleration.y <span class="number" id="ay">-</span>m/s²</div>
+                <div class="value">acceleration.z <span class="number" id="az">-</span>m/s²</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 1. Touch Event
+        const playground = document.querySelector('#playground');
+        const ball = document.querySelector('#ball');
+        const touchCount = document.querySelector('#touchCount');
+        const log = document.querySelector('#log');
+
+        // Eventhandler
+        playground.ontouchstart = function (event) {
+            event.preventDefault();
+
+            touchCount.textContent = event.touches.length;
+            // neu hinzugekommener Touch
+            const touch = event.changedTouches[0];
+
+            if (touch) {
+                moveBall(touch.clientX, touch.clientY);
+            }
+
+            log.textContent = "ontouchstart\n" + "touches.length: " + event.touches.length + "\n" +
+                "changedTouches.length: " + event.changedTouches.length;
+        };
+
+        playground.ontouchmove = function (event) {
+            event.preventDefault();
+
+            touchCount.textContent = event.touches.length;
+
+            // nur die Touches die sich geändert haben
+            for (let i = 0; i < event.changedTouches.length; i++) {
+                const touch = event.changedTouches[i];
+                moveBall(touch.clientX, touch.clientY);
+            }
+
+            log.textContent = "ontouchmove\n" + "touches.length: " + event.touches.length + "\n" +
+                "changedTouches.length: " + event.changedTouches.length;
+        };
+
+        playground.ontouchend = function (event) {
+            touchCount.textContent = event.touches.length;
+
+            log.textContent = "ontouchend\n" + "touches.length: " + event.touches.length + "\n" +
+                "changedTouches.length: " + event.changedTouches.length;
+        };
+
+        playground.ontouchcancel = function (event) {
+            touchCount.textContent = event.touches.length;
+
+            log.textContent = "Touch wurde abgebrochen.";
+        };
+
+        function moveBall(clientX, clientY) {
+            const rect = playground.getBoundingClientRect();
+            // Viewport-Koordinatien in Koordinater auf der Fläche umrechnen
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            ball.style.left = x + "px";
+            ball.style.top = y + "px";
+        };
+
+        // 2. Device Orientation & 3. Device Motion
+        const status = document.querySelector('#sensorStatus');
+        const startButton = document.querySelector('#startSensors');
+
+        const format = value => Number.isFinite(value) ? value.toFixed(2) : "nicht verfügbar";
+
+        function handleOrientation(event) {
+            document.querySelector('#alpha').textContent = format(event.alpha);
+            document.querySelector('#beta').textContent = format(event.beta);
+            document.querySelector('#gamma').textContent = format(event.gamma);
+        };
+
+        function handleMotion(event) {
+            const acceleration = event.acceleration;
+
+            if (!acceleration) {
+                status.textContent = 'Keine Beschleunigungswerte verfügbar.';
+            }
+
+            document.querySelector('#ax').textContent = format(acceleration.x);
+            document.querySelector('#ay').textContent = format(acceleration.y);
+            document.querySelector('#az').textContent = format(acceleration.z);
+        };
+
+        let sensorsStarted = false;
+
+        startButton.addEventListener('click', async () => {
+            if (sensorsStarted) return;
+
+            try {
+                // für manche Browser eine explizite Berechtigung
+                const permissionRequests = [];
+
+                if (
+                    typeof DeviceOrientationEvent !== "undefined" &&
+                    typeof DeviceOrientationEvent.requestPermission === "function"
+                ) {
+                    permissionRequests.push(DeviceOrientationEvent.requestPermission());
+                };
+
+                if (
+                    typeof DeviceMotionEvent !== "undefined" &&
+                    typeof DeviceMotionEvent.requestPermission === "function"
+                ) {
+                    permissionRequests.push(DeviceMotionEvent.requestPermission());
+                };
+
+                const permissions = await Promise.all(permissionRequests);
+
+                if (permissions.some(permission => permission !== 'granted')) {
+                    status.textContent = 'Sensorzugriff wurde nicht vollständig erlaubt.';
+                    return;
+                };
+
+                if (
+                    typeof DeviceOrientationEvent === "undefined" ||
+                    typeof DeviceMotionEvent === "undefined"
+                ) {
+                    status.textContent = 'Die Sensor API wird nicht unterstützt.';
+                    return;
+                };
+
+                window.addEventListener('deviceorientation', handleOrientation);
+                window.addEventListener('devicemotion', handleMotion);
+
+                sensorsStarted = true;
+                startButton.disabled = true;
+                status.textContent = 'Sensor-Listener aktiv. Bitte Gerät bewegen.';
+
+            } catch (error) {
+                status.textContent = 'Sensorzugriff fehlgeschlagen: ' + error.message;
+            }
+        });
+
+    </script>
+</body>
+
+</html>

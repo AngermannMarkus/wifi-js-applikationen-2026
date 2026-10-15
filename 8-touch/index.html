@@ -137,6 +137,22 @@
             <p>Aktive Touches: <strong id="touchCount">0</strong></p>
             <p id="log">Warte auf Touch Ereignisse</p>
         </section>
+
+        <section>
+            <h2>2. Device Orientation</h2>
+            <p>Sensorzugriff muss erlaubt werden. Alpha beschreibt die Drehung um Z,
+                Beta um X und Gamma um Y.
+            </p>
+
+            <div class="values">
+                <div class="value">alpha <span class="number" id="alpha">-</span></div>
+                <div class="value">beta <span class="number" id="beta">-</span></div>
+                <div class="value">gamma <span class="number" id="gamma">-</span></div>
+            </div>
+
+            <p id="sensorStatus">Sensoren noch nicht gestartet.</p>
+            <button id="startSensors">Sensoren aktivieren</button>
+        </section>
     </main>
 
     <script>
@@ -199,6 +215,59 @@
             ball.style.left = x + "px";
             ball.style.top = y + "px";
         };
+
+        // 2. Device Orientation
+        const status = document.querySelector('#sensorStatus');
+        const startButton = document.querySelector('#startSensors');
+
+        const format = value => Number.isFinite(value) ? value.toFixed(2) : "nicht verfügbar";
+
+        function handleOrientation(event) {
+            document.querySelector('#alpha').textContent = format(event.alpha);
+            document.querySelector('#beta').textContent = format(event.beta);
+            document.querySelector('#gamma').textContent = format(event.gamma);
+        };
+
+        let sensorsStarted = false;
+
+        startButton.addEventListener('click', async () => {
+            if (sensorsStarted) return;
+
+            try {
+                // für manche Browser eine explizite Berechtigung
+                const permissionRequests = [];
+
+                if (
+                    typeof DeviceOrientationEvent !== "undefined" &&
+                    typeof DeviceOrientationEvent.requestPermission === "function"
+                ) {
+                    permissionRequests.push(DeviceOrientationEvent.requestPermission());
+                };
+
+                const permissions = await Promise.all(permissionRequests);
+
+                if (permissions.some(permission => permission !== 'granted')) {
+                    status.textContent = 'Sensorzugriff wurde nicht vollständig erlaubt.';
+                    return;
+                };
+
+                if (
+                    typeof DeviceOrientationEvent === "undefined"
+                ) {
+                    status.textContent = 'Die Sensor API wird nicht unterstützt.';
+                    return;
+                };
+
+                window.addEventListener('deviceorientation', handleOrientation);
+
+                sensorsStarted = true;
+                startButton.disabled = true;
+                status.textContent = 'Sensor-Listener aktiv. Bitte Gerät bewegen.';
+
+            } catch (error) {
+                status.textContent = 'Sensorzugriff fehlgeschlagen: ' + error.message;
+            }
+        });
 
     </script>
 </body>
